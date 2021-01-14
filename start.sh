@@ -1,0 +1,170 @@
+#!/usr/bin/env sh
+
+if [ -z "${VLC_SOURCE_1X1}" ]; then
+    echo "Source 1,1 not defines (VLC_SOURCE_1X1)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_2X1}" ]; then
+    echo "Source 2,1 not defines (VLC_SOURCE_2X1)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_3X1}" ]; then
+    echo "Source 3,1 not defines (VLC_SOURCE_3X1)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_1X2}" ]; then
+    echo "Source 1,2 not defines (VLC_SOURCE_1X2)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_2X2}" ]; then
+    echo "Source 2,2 not defines (VLC_SOURCE_2X2)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_3X2}" ]; then
+    echo "Source 3,2 not defines (VLC_SOURCE_3X2)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_1X3}" ]; then
+    echo "Source 1,3 not defines (VLC_SOURCE_1X3)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_2X3}" ]; then
+    echo "Source 2,3 not defines (VLC_SOURCE_2X3)"
+    exit 1
+fi
+
+if [ -z "${VLC_SOURCE_3X3}" ]; then
+    echo "Source 3,3 not defines (VLC_SOURCE_3X3)"
+    exit 1
+fi
+
+if [ -z "${VLC_MOSAIC_WIDTH}" ]; then
+    VLC_MOSAIC_WIDTH=1280
+fi
+
+if [ -z "${VLC_MOSAIC_HEIGHT}" ]; then
+    VLC_MOSAIC_HEIGHT=720
+fi
+
+if [ -z "${VLC_MULTICAST_IP}" ]; then
+    VLC_MULTICAST_IP=234.0.0.255
+fi
+
+if [ -z "${VLC_MULTICAST_PORT}" ]; then
+    VLC_MULTICAST_PORT=1234
+fi
+
+if [ -z "${VLC_BITRATE}" ]; then
+    VLC_BITRATE=1000
+fi
+
+if [ -z "${VLC_SAP_GROUP}" ]; then
+    VLC_SAP_GROUP=3x3
+fi
+
+if [ -z "${VLC_SAP_NAME}" ]; then
+    VLC_SAP_NAME=Mosaic
+fi
+
+if [ -z "${VLC_ADAPTIVE_WIDTH}" ]; then
+    VLC_ADAPTIVE_WIDTH=1280
+fi
+
+if [ -z "${VLC_ADAPTIVE_HEIGHT}" ]; then
+    VLC_ADAPTIVE_HEIGHT=720
+fi
+
+if [ -z "${VLC_ADAPTIVE_BITRATE}" ]; then
+    VLC_ADAPTIVE_BITRATE=100000
+fi
+
+if [ -z "${VLC_ADAPTIVE_LOGIC}" ]; then
+    VLC_ADAPTIVE_LOGIC=highest
+fi
+
+/usr/bin/convert -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 /vlc/mosaic_background.png
+
+cat << EOF > /vlc/mosaic.vlm
+del all
+
+new 1x1 broadcast enabled
+setup 1x1 input ${VLC_SOURCE_1X1} loop
+setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=426,height=240},select=video,dst=bridge-out{id=0}'}
+
+new 2x1 broadcast enabled
+setup 2x1 input ${VLC_SOURCE_2X1} loop
+setup 2x1 output #duplicate{dst='mosaic-bridge{id=2,width=426,height=240},select=video,dst=bridge-out{id=1}'}
+
+new 3x1 broadcast enabled
+setup 3x1 input ${VLC_SOURCE_3X1} loop
+setup 3x1 output #duplicate{dst='mosaic-bridge{id=3,width=426,height=240},select=video,dst=bridge-out{id=2}'}
+
+new 1x2 broadcast enabled
+setup 1x2 input ${VLC_SOURCE_1X2} loop
+setup 1x2 output #duplicate{dst='mosaic-bridge{id=4,width=426,height=240},select=video,dst=bridge-out{id=3}'}
+
+new 2x2 broadcast enabled
+setup 2x2 input ${VLC_SOURCE_2X2} loop
+setup 2x2 output #duplicate{dst='mosaic-bridge{id=5,width=426,height=240},select=video,dst=bridge-out{id=4}'}
+
+new 3x2 broadcast enabled
+setup 3x2 input ${VLC_SOURCE_3X2} loop
+setup 3x2 output #duplicate{dst='mosaic-bridge{id=6,width=426,height=240},select=video,dst=bridge-out{id=5}'}
+
+new 1x3 broadcast enabled
+setup 1x3 input ${VLC_SOURCE_1X3} loop
+setup 1x3 output #duplicate{dst='mosaic-bridge{id=7,width=426,height=240},select=video,dst=bridge-out{id=6}'}
+
+new 2x3 broadcast enabled
+setup 2x3 input ${VLC_SOURCE_2X3} loop
+setup 2x3 output #duplicate{dst='mosaic-bridge{id=8,width=426,height=240},select=video,dst=bridge-out{id=7}'}
+
+new 3x3 broadcast enabled
+setup 3x3 input ${VLC_SOURCE_3X3} loop
+setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=426,height=240},select=video,dst=bridge-out{id=8}'}
+
+## MOSAIC ##
+new mosaic broadcast enabled 
+setup mosaic option image-duration=-1
+setup mosaic input /vlc/mosaic_background.png
+setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{preset=ultrafast},vcodec=h264,threads=8}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
+
+control 1x1 play
+control 2x1 play
+control 3x1 play
+control 1x2 play
+control 2x2 play
+control 3x2 play
+control 1x3 play
+control 2x3 play
+control 3x3 play
+control mosaic play
+EOF
+
+cat << EOF
+Streaming Mosaic: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
+Multicast: ${VLC_MULTICAST_IP}:${VLC_MULTICAST_PORT}
+Sources:
+ 1,1 ${VLC_SOURCE_1X1}
+ 2,1 ${VLC_SOURCE_2X1}
+ 3,1 ${VLC_SOURCE_3X1}
+ 1,2 ${VLC_SOURCE_1X2}
+ 2,2 ${VLC_SOURCE_2X2}
+ 3,2 ${VLC_SOURCE_3X2}
+ 1,3 ${VLC_SOURCE_1X3}
+ 2,3 ${VLC_SOURCE_2X3}
+ 3,3 ${VLC_SOURCE_3X3}
+EOF
+
+/usr/bin/vlc -I dummy --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
+
+cat << EOF
+Mosaic Finished: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
+EOF
