@@ -156,6 +156,8 @@ EOF
 
 cat << EOF
 Streaming Mosaic: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
+Mosaic Dimensions: ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT}
+Video Dimensions: ${SOURCE_WIDTH}x${SOURCE_HEIGHT}
 Multicast: ${VLC_MULTICAST_IP}:${VLC_MULTICAST_PORT}
 Sources:
  1,1 ${VLC_SOURCE_1X1}
