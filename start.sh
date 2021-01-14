@@ -45,6 +45,10 @@ if [ -z "${VLC_SOURCE_3X3}" ]; then
     exit 1
 fi
 
+if [ -z "${VLC_THREADS}" ]; then
+    VLC_THREADS=0
+fi
+
 if [ -z "${VLC_MOSAIC_WIDTH}" ]; then
     VLC_MOSAIC_WIDTH=1280
 fi
@@ -90,51 +94,53 @@ if [ -z "${VLC_ADAPTIVE_LOGIC}" ]; then
 fi
 
 /usr/bin/convert -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 /vlc/mosaic_background.png
+SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH}/3))"
+SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT}/3))"
 
 cat << EOF > /vlc/mosaic.vlm
 del all
 
 new 1x1 broadcast enabled
 setup 1x1 input ${VLC_SOURCE_1X1} loop
-setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=426,height=240},select=video,dst=bridge-out{id=0}'}
+setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=0}'}
 
 new 2x1 broadcast enabled
 setup 2x1 input ${VLC_SOURCE_2X1} loop
-setup 2x1 output #duplicate{dst='mosaic-bridge{id=2,width=426,height=240},select=video,dst=bridge-out{id=1}'}
+setup 2x1 output #duplicate{dst='mosaic-bridge{id=2,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=1}'}
 
 new 3x1 broadcast enabled
 setup 3x1 input ${VLC_SOURCE_3X1} loop
-setup 3x1 output #duplicate{dst='mosaic-bridge{id=3,width=426,height=240},select=video,dst=bridge-out{id=2}'}
+setup 3x1 output #duplicate{dst='mosaic-bridge{id=3,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=2}'}
 
 new 1x2 broadcast enabled
 setup 1x2 input ${VLC_SOURCE_1X2} loop
-setup 1x2 output #duplicate{dst='mosaic-bridge{id=4,width=426,height=240},select=video,dst=bridge-out{id=3}'}
+setup 1x2 output #duplicate{dst='mosaic-bridge{id=4,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=3}'}
 
 new 2x2 broadcast enabled
 setup 2x2 input ${VLC_SOURCE_2X2} loop
-setup 2x2 output #duplicate{dst='mosaic-bridge{id=5,width=426,height=240},select=video,dst=bridge-out{id=4}'}
+setup 2x2 output #duplicate{dst='mosaic-bridge{id=5,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=4}'}
 
 new 3x2 broadcast enabled
 setup 3x2 input ${VLC_SOURCE_3X2} loop
-setup 3x2 output #duplicate{dst='mosaic-bridge{id=6,width=426,height=240},select=video,dst=bridge-out{id=5}'}
+setup 3x2 output #duplicate{dst='mosaic-bridge{id=6,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=5}'}
 
 new 1x3 broadcast enabled
 setup 1x3 input ${VLC_SOURCE_1X3} loop
-setup 1x3 output #duplicate{dst='mosaic-bridge{id=7,width=426,height=240},select=video,dst=bridge-out{id=6}'}
+setup 1x3 output #duplicate{dst='mosaic-bridge{id=7,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=6}'}
 
 new 2x3 broadcast enabled
 setup 2x3 input ${VLC_SOURCE_2X3} loop
-setup 2x3 output #duplicate{dst='mosaic-bridge{id=8,width=426,height=240},select=video,dst=bridge-out{id=7}'}
+setup 2x3 output #duplicate{dst='mosaic-bridge{id=8,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=7}'}
 
 new 3x3 broadcast enabled
 setup 3x3 input ${VLC_SOURCE_3X3} loop
-setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=426,height=240},select=video,dst=bridge-out{id=8}'}
+setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=8}'}
 
 ## MOSAIC ##
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
 setup mosaic input /vlc/mosaic_background.png
-setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{preset=ultrafast},vcodec=h264,threads=8}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
+setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{preset=ultrafast},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
 
 control 1x1 play
 control 2x1 play
