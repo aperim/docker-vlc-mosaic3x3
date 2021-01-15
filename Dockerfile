@@ -2,6 +2,8 @@ FROM alpine:latest
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
+ARG PORT=4212
+ENV PORT=${PORT}
 
 LABEL org.opencontainers.image.source https://github.com/aperim/docker-vlc-mosaic3x3
 LABEL org.label-schema.build-date=$BUILD_DATE \
@@ -13,6 +15,8 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.vendor="Aperim Pty Ltd" \
   org.label-schema.version=$VERSION \
   org.label-schema.schema-version="1.0"
+
+EXPOSE ${PORT}
 
 RUN apk --no-cache add vlc imagemagick
 
