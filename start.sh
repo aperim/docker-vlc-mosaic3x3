@@ -93,6 +93,14 @@ if [ -z "${VLC_ADAPTIVE_LOGIC}" ]; then
     VLC_ADAPTIVE_LOGIC=highest
 fi
 
+if [ -z "${PORT}" ]; then
+    PORT=4212
+fi
+
+if [ -z "${PASSWORD}" ]; then
+    PASSWORD=vlcmulticast
+fi
+
 /usr/bin/convert -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 /vlc/mosaic_background.png
 SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH}/3))"
 SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT}/3))"
@@ -171,7 +179,7 @@ Sources:
  3,3 ${VLC_SOURCE_3X3}
 EOF
 
-/usr/bin/vlc -I dummy --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
+/usr/bin/vlc -I telnet --telnet-password=${PASSWORD} --telnet-port=${PORT} --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
 
 cat << EOF
 Mosaic Finished: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
