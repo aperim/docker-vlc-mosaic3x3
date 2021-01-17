@@ -93,6 +93,14 @@ if [ -z "${VLC_ADAPTIVE_LOGIC}" ]; then
     VLC_ADAPTIVE_LOGIC=highest
 fi
 
+if [ -z "${VLC_X264}" ]; then
+    VLC_X264="preset=ultrafast,tune=zerolatency,keyint=30,bframes=0,ref=1,level=30,profile=baseline,hrd=cbr,crf=20,ratetol=1.0,vbv-maxrate=1200,vbv-bufsize=1200,lookahead=0"
+fi
+
+if [ -z "${VLC_FPS}" ]; then
+    VLC_FPS=15
+fi
+
 if [ -z "${PORT}" ]; then
     PORT=4212
 fi
@@ -148,7 +156,7 @@ setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=${SOURCE_WIDTH},height
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
 setup mosaic input /vlc/mosaic_background.png
-setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{preset=ultrafast},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
+setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{${VLC_X264}},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
 
 control 1x1 play
 control 2x1 play
@@ -179,7 +187,7 @@ Sources:
  3,3 ${VLC_SOURCE_3X3}
 EOF
 
-/usr/bin/vlc -I telnet --telnet-password=${PASSWORD} --telnet-port=${PORT} --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
+/usr/bin/vlc -I telnet --telnet-password="${PASSWORD}" --telnet-port=${PORT} --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
 
 cat << EOF
 Mosaic Finished: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
