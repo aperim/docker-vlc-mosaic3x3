@@ -46,7 +46,7 @@ if [ -z "${VLC_SOURCE_3X3}" ]; then
 fi
 
 if [ -z "${VLC_THREADS}" ]; then
-    VLC_THREADS=0
+    VLC_THREADS=$(nproc --all)
 fi
 
 if [ -z "${VLC_MOSAIC_WIDTH}" ]; then
