@@ -65,8 +65,12 @@ if [ -z "${VLC_MULTICAST_PORT}" ]; then
     VLC_MULTICAST_PORT=1234
 fi
 
-if [ -z "${VLC_BITRATE}" ]; then
-    VLC_BITRATE=1000
+if [ -z "${VLC_MAXRATE}" ]; then
+    VLC_MAXRATE=1200
+fi
+
+if [ -z "${VLC_BUFSIZE}" ]; then
+    VLC_BUFSIZE=1200
 fi
 
 if [ -z "${VLC_SAP_GROUP}" ]; then
@@ -94,7 +98,7 @@ if [ -z "${VLC_ADAPTIVE_LOGIC}" ]; then
 fi
 
 if [ -z "${VLC_X264}" ]; then
-    VLC_X264="preset=ultrafast,tune=zerolatency,keyint=30,bframes=0,ref=1,level=30,profile=baseline,hrd=cbr,crf=20,ratetol=1.0,vbv-maxrate=1200,vbv-bufsize=1200,lookahead=0"
+    VLC_X264="preset=ultrafast,tune=zerolatency,keyint=30,bframes=0,ref=1,level=30,profile=baseline,hrd=cbr,crf=20,ratetol=1.0,vbv-maxrate=${VLC_MAXRATE},vbv-bufsize=${VLC_BUFSIZE},lookahead=0"
 fi
 
 if [ -z "${VLC_FPS}" ]; then
