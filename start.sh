@@ -122,7 +122,7 @@ del all
 
 new 1x1 broadcast enabled
 setup 1x1 input ${VLC_SOURCE_1X1} loop
-setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=0}'}
+setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=0},select=audio'}
 
 new 2x1 broadcast enabled
 setup 2x1 input ${VLC_SOURCE_2X1} loop
@@ -160,7 +160,7 @@ setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=${SOURCE_WIDTH},height
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
 setup mosaic input /vlc/mosaic_background.png
-setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{${VLC_X264}},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}",select=video}'}
+setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{${VLC_X264}},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}"}'}
 
 control 1x1 play
 control 2x1 play
