@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 
 # VLC=/Applications/VLC.app/Contents/MacOS/VLC
-VLC=/usr/bin/vlc
+VLC=$(command -v vlc)
+CONVERT=$(command -v convert)
 
 if [ -z "${VLC_SOURCE_1X1}" ]; then
     echo "Source 1,1 not defined (VLC_SOURCE_1X1)"
@@ -126,11 +127,11 @@ fi
 
 VLC_AVCODEC_OPTIONS="--avcodec-dr 0 --avcodec-corrupted 1 --avcodec-hurry-up 1 --avcodec-skip-frame 0 --avcodec-skip-idct 0 --avcodec-fast 1 --avcodec-threads ${VLC_THREADS} --sout-avcodec-strict -2"
 
-/usr/bin/convert -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 /vlc/mosaic_background.png
+mkdir -p ./vlc
+
+${CONVERT} -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 ./vlc/mosaic_background.png
 SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH}/3))"
 SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT}/3))"
-
-mkdir -p ./vlc
 
 cat << EOF > ./vlc/mosaic.vlm
 del all
@@ -174,7 +175,7 @@ setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=${SOURCE_WIDTH},height
 ## MOSAIC ##
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
-setup mosaic input /vlc/mosaic_background.png
+setup mosaic input ./vlc/mosaic_background.png
 setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{${VLC_X264}},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}"}'}
 
 control 1x1 play

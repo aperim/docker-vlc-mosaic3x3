@@ -23,7 +23,7 @@ EXPOSE ${PORT}
 RUN export DEBIAN_FRONTEND=noninteractive && \
   apt-get update && \
   apt-get -y upgrade && \
-  apt-get -y install vlc ffmpeg mpg123 && \
+  apt-get -y install vlc ffmpeg mpg123 imagemagick && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
