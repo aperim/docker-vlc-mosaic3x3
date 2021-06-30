@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-# VLC=/Applications/VLC.app/Contents/MacOS/VLC
 VLC=$(command -v vlc)
 CONVERT=$(command -v convert)
 

@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM debian:sid
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
