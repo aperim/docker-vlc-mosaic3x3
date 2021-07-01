@@ -2,10 +2,6 @@ FROM debian:sid
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
-ARG PORT=4212
-ARG RC_PORT=5212
-ENV PORT=${PORT}
-ENV VLC_RC_PORT=${RC_PORT}
 
 LABEL org.opencontainers.image.source https://github.com/aperim/docker-vlc-multicast
 LABEL org.label-schema.build-date=$BUILD_DATE \
@@ -17,8 +13,6 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.vendor="Aperim Pty Ltd" \
   org.label-schema.version=$VERSION \
   org.label-schema.schema-version="1.0"
-
-EXPOSE ${PORT}
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
   apt-get update && \

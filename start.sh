@@ -77,11 +77,15 @@ if [ -z "${VLC_BUFSIZE}" ]; then
 fi
 
 if [ -z "${VLC_SAP_GROUP}" ]; then
-    VLC_SAP_GROUP=3x3
+    VLC_SAP_GROUP=Mosaic Group
 fi
 
 if [ -z "${VLC_SAP_NAME}" ]; then
-    VLC_SAP_NAME=Mosaic
+    VLC_SAP_NAME=3x3 Demo
+fi
+
+if [ -z "${VLC_SAP_DESCRIPTION}" ]; then
+    VLC_SAP_DESCRIPTION=A demonstration stream.
 fi
 
 if [ -z "${VLC_ADAPTIVE_WIDTH}" ]; then
@@ -120,11 +124,20 @@ if [ -z "${VLC_RC_PORT}" ]; then
     VLC_RC_PORT=10101
 fi
 
+if [ -z "${VLC_TTL}" ]; then
+    VLC_TTL=15
+fi
+
 if [ -z "${VLC_VERBOSE}" ]; then
     VLC_VERBOSE=0
 fi
 
-VLC_AVCODEC_OPTIONS="--avcodec-dr 0 --avcodec-corrupted 1 --avcodec-hurry-up 1 --avcodec-skip-frame 0 --avcodec-skip-idct 0 --avcodec-fast 1 --avcodec-threads ${VLC_THREADS} --sout-avcodec-strict -2"
+VLC_AVCODEC_OPTIONS="--avcodec-dr --avcodec-corrupted --avcodec-hurry-up --avcodec-skip-frame=1 --avcodec-skip-idct=1 --avcodec-fast --avcodec-threads=${VLC_THREADS} --sout-avcodec-strict=-2"
+VLC_DESTINATION_STANDARD="standard{access=udp{caching=1000,ttl=15},mux=ts{use-key-frames},dst=${VLC_MULTICAST_IP}:${VLC_MULTICAST_PORT},sap,group=${VLC_SAP_GROUP},name=${VLC_SAP_NAME}}"
+VLC_DESTINATION_RTP="'rtp{dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,ttl=${VLC_TTL},mux=ts{use-key-frames},proto=udp,name=\"${VLC_SAP_NAME}\",description=\"${VLC_SAP_DESCRIPTION}\",group=\"${VLC_SAP_GROUP}\"}'"
+VLC_DESTINATION="dst=${VLC_DESTINATION_RTP}"
+
+VLC_TRANSCODE="transcode{vcodec=h264,venc=x264{${VLC_X264}},vb=${VLC_MAXRATE},fps=${VLC_FPS},threads=${VLC_THREADS}}"
 
 mkdir -p ./vlc
 
@@ -137,45 +150,45 @@ del all
 
 new 1x1 broadcast enabled
 setup 1x1 input ${VLC_SOURCE_1X1} loop
-setup 1x1 output #duplicate{dst='mosaic-bridge{id=1,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=0},select=audio'}
+setup 1x1 output #duplicate{dst=mosaic-bridge{id=1,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=1},select=audio}
 
 new 2x1 broadcast enabled
 setup 2x1 input ${VLC_SOURCE_2X1} loop
-setup 2x1 output #duplicate{dst='mosaic-bridge{id=2,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=1}'}
+setup 2x1 output #duplicate{dst=mosaic-bridge{id=2,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=2},select=audio}
 
 new 3x1 broadcast enabled
 setup 3x1 input ${VLC_SOURCE_3X1} loop
-setup 3x1 output #duplicate{dst='mosaic-bridge{id=3,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=2}'}
+setup 3x1 output #duplicate{dst=mosaic-bridge{id=3,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=3},select=audio}
 
 new 1x2 broadcast enabled
 setup 1x2 input ${VLC_SOURCE_1X2} loop
-setup 1x2 output #duplicate{dst='mosaic-bridge{id=4,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=3}'}
+setup 1x2 output #duplicate{dst=mosaic-bridge{id=4,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=4},select=audio}
 
 new 2x2 broadcast enabled
 setup 2x2 input ${VLC_SOURCE_2X2} loop
-setup 2x2 output #duplicate{dst='mosaic-bridge{id=5,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=4}'}
+setup 2x2 output #duplicate{dst=mosaic-bridge{id=5,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=5},select=audio}
 
 new 3x2 broadcast enabled
 setup 3x2 input ${VLC_SOURCE_3X2} loop
-setup 3x2 output #duplicate{dst='mosaic-bridge{id=6,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=5}'}
+setup 3x2 output #duplicate{dst=mosaic-bridge{id=6,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=6},select=audio}
 
 new 1x3 broadcast enabled
 setup 1x3 input ${VLC_SOURCE_1X3} loop
-setup 1x3 output #duplicate{dst='mosaic-bridge{id=7,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=6}'}
+setup 1x3 output #duplicate{dst=mosaic-bridge{id=7,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=7},select=audio}
 
 new 2x3 broadcast enabled
 setup 2x3 input ${VLC_SOURCE_2X3} loop
-setup 2x3 output #duplicate{dst='mosaic-bridge{id=8,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=7}'}
+setup 2x3 output #duplicate{dst=mosaic-bridge{id=8,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=8},select=audio}
 
 new 3x3 broadcast enabled
 setup 3x3 input ${VLC_SOURCE_3X3} loop
-setup 3x3 output #duplicate{dst='mosaic-bridge{id=9,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=8}'}
+setup 3x3 output #duplicate{dst=mosaic-bridge{id=9,width=${SOURCE_WIDTH},height=${SOURCE_HEIGHT}},select=video,dst=bridge-out{id=9},select=audio}
 
 ## MOSAIC ##
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
 setup mosaic input ./vlc/mosaic_background.png
-setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,mosaic-align=5},venc=x264{${VLC_X264}},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{dst='rtp{access=udp,mux=ts,ttl=15,dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,group="${VLC_SAP_GROUP}",name="${VLC_SAP_NAME}"}'}
+setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,align=5},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{${VLC_DESTINATION}}
 
 control 1x1 play
 control 2x1 play
@@ -207,7 +220,8 @@ Sources:
 EOF
 
 # /usr/bin/vlc -I telnet --telnet-password="${PASSWORD}" --telnet-port=${PORT} ${VLC_AVCODEC_OPTIONS} --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
-${VLC} -I dummy --verbose ${VLC_VERBOSE} --vlm-conf=./vlc/mosaic.vlm --no-disable-screensaver ${VLC_AVCODEC_OPTIONS} --no-repeat --no-loop --network-caching=${VLC_CACHE} --drop-late-frames --skip-frames --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE}
+# ${VLC} -I dummy --vlm-conf=./vlc/mosaic.vlm --no-media-library --verbose=${VLC_VERBOSE} --no-video-title --mosaic-keep-picture
+${VLC} -I dummy --no-media-library --verbose=${VLC_VERBOSE} --vlm-conf=./vlc/mosaic.vlm --no-disable-screensaver ${VLC_AVCODEC_OPTIONS} --no-repeat --no-loop --network-caching=${VLC_CACHE} --drop-late-frames --skip-frames --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE}
 
 cat << EOF
 Mosaic Finished: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
