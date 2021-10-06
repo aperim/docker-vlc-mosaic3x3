@@ -1,14 +1,14 @@
 # VLC to 3x3 Mosaic
 
-## What does it do?
+## What does it do
 
 Creates a 3x3 mosaic and multicasts it
 
-## Who is it for?
+## Who is it for
 
 You, I guess?!
 
-## How do I do?
+## How do I do
 
 ```bash
 docker run -it --rm --network host \
@@ -24,7 +24,7 @@ docker run -it --rm --network host \
     ghcr.io/aperim/vlc-matrix3x3:latest
 ```
 
-## That's it?
+## That's it
 
 Yes.
 

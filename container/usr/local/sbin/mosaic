@@ -133,19 +133,19 @@ if [ -z "${VLC_VERBOSE}" ]; then
 fi
 
 VLC_AVCODEC_OPTIONS="--avcodec-dr --avcodec-corrupted --avcodec-hurry-up --avcodec-skip-frame=1 --avcodec-skip-idct=1 --avcodec-fast --avcodec-threads=${VLC_THREADS} --sout-avcodec-strict=-2"
-VLC_DESTINATION_STANDARD="standard{access=udp{caching=1000,ttl=15},mux=ts{use-key-frames},dst=${VLC_MULTICAST_IP}:${VLC_MULTICAST_PORT},sap,group=${VLC_SAP_GROUP},name=${VLC_SAP_NAME}}"
+# VLC_DESTINATION_STANDARD="standard{access=udp{caching=1000,ttl=15},mux=ts{use-key-frames},dst=${VLC_MULTICAST_IP}:${VLC_MULTICAST_PORT},sap,group=${VLC_SAP_GROUP},name=${VLC_SAP_NAME}}"
 VLC_DESTINATION_RTP="'rtp{dst=${VLC_MULTICAST_IP},port=${VLC_MULTICAST_PORT},sdp=sap://,ttl=${VLC_TTL},mux=ts{use-key-frames},proto=udp,name=\"${VLC_SAP_NAME}\",description=\"${VLC_SAP_DESCRIPTION}\",group=\"${VLC_SAP_GROUP}\"}'"
 VLC_DESTINATION="dst=${VLC_DESTINATION_RTP}"
 
-VLC_TRANSCODE="transcode{vcodec=h264,venc=x264{${VLC_X264}},vb=${VLC_MAXRATE},fps=${VLC_FPS},threads=${VLC_THREADS}}"
+# VLC_TRANSCODE="transcode{vcodec=h264,venc=x264{${VLC_X264}},vb=${VLC_MAXRATE},fps=${VLC_FPS},threads=${VLC_THREADS}}"
 
-mkdir -p ${HOME}/vlc
+mkdir -p "${HOME}"/vlc
 
 ${CONVERT} -size "${VLC_MOSAIC_WIDTH}"x"${VLC_MOSAIC_HEIGHT}" "xc:#000000" "${HOME}"/vlc/mosaic_background.png
-SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH} / 3))"
-SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT} / 3))"
+SOURCE_WIDTH="$((VLC_MOSAIC_WIDTH / 3))"
+SOURCE_HEIGHT="$((VLC_MOSAIC_HEIGHT / 3))"
 
-cat <<EOF >${HOME}/vlc/mosaic.vlm
+cat <<EOF >"${HOME}"/vlc/mosaic.vlm
 del all
 
 new 1x1 broadcast enabled
@@ -227,5 +227,5 @@ nice -n -20 ${VLC_COMMAND} &
 vlcpid=$!
 echo "🆔 VLC Running as PID ${vlcpid}"
 wait "$vlcpid"
-rm -f ${HOME}/vlc/mosaic.vlm
+rm -f "${HOME}"/vlc/mosaic.vlm
 echo "👋 VLC Stream ${VLC_SAP_GROUP}/${VLC_SAP_NAME} Finished"
