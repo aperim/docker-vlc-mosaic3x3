@@ -76,7 +76,7 @@ jobs:
     name: 👷 Build
     needs:
       - information
-    runs-on: ${{ matrix.architecture }}
+    runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v2
