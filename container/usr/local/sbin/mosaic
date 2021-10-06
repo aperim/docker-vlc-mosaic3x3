@@ -139,13 +139,13 @@ VLC_DESTINATION="dst=${VLC_DESTINATION_RTP}"
 
 VLC_TRANSCODE="transcode{vcodec=h264,venc=x264{${VLC_X264}},vb=${VLC_MAXRATE},fps=${VLC_FPS},threads=${VLC_THREADS}}"
 
-mkdir -p ./vlc
+mkdir -p ${HOME}/vlc
 
-${CONVERT} -size ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT} xc:#000000 ./vlc/mosaic_background.png
-SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH}/3))"
-SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT}/3))"
+${CONVERT} -size "${VLC_MOSAIC_WIDTH}"x"${VLC_MOSAIC_HEIGHT}" "xc:#000000" "${HOME}"/vlc/mosaic_background.png
+SOURCE_WIDTH="$((${VLC_MOSAIC_WIDTH} / 3))"
+SOURCE_HEIGHT="$((${VLC_MOSAIC_HEIGHT} / 3))"
 
-cat << EOF > ./vlc/mosaic.vlm
+cat <<EOF >${HOME}/vlc/mosaic.vlm
 del all
 
 new 1x1 broadcast enabled
@@ -187,7 +187,7 @@ setup 3x3 output #duplicate{dst=mosaic-bridge{id=9,width=${SOURCE_WIDTH},height=
 ## MOSAIC ##
 new mosaic broadcast enabled 
 setup mosaic option image-duration=-1
-setup mosaic input ./vlc/mosaic_background.png
+setup mosaic input ${HOME}/vlc/mosaic_background.png
 setup mosaic output #transcode{sfilter=mosaic{width=${VLC_MOSAIC_WIDTH},height=${VLC_MOSAIC_HEIGHT},cols=3,rows=3,position=1,order="1,2,3,4,5,6,7,8,9",keep-aspect-ratio=enabled,keep-picture=1,align=5},fps=${VLC_FPS},vcodec=h264,threads=${VLC_THREADS}}:duplicate{${VLC_DESTINATION}}
 
 control 1x1 play
@@ -202,7 +202,7 @@ control 3x3 play
 control mosaic play
 EOF
 
-cat << EOF
+cat <<EOF
 Streaming Mosaic: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
 Mosaic Dimensions: ${VLC_MOSAIC_WIDTH}x${VLC_MOSAIC_HEIGHT}
 Video Dimensions: ${SOURCE_WIDTH}x${SOURCE_HEIGHT}
@@ -219,10 +219,13 @@ Sources:
  3,3 ${VLC_SOURCE_3X3}
 EOF
 
-# /usr/bin/vlc -I telnet --telnet-password="${PASSWORD}" --telnet-port=${PORT} ${VLC_AVCODEC_OPTIONS} --drop-late-frames --skip-frames --play-and-exit --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE} --vlm-conf=/vlc/mosaic.vlm
-# ${VLC} -I dummy --vlm-conf=./vlc/mosaic.vlm --no-media-library --verbose=${VLC_VERBOSE} --no-video-title --mosaic-keep-picture
-${VLC} -I dummy --no-media-library --verbose=${VLC_VERBOSE} --vlm-conf=./vlc/mosaic.vlm --no-disable-screensaver ${VLC_AVCODEC_OPTIONS} --no-repeat --no-loop --network-caching=${VLC_CACHE} --drop-late-frames --skip-frames --no-daemon --adaptive-logic="${VLC_ADAPTIVE_LOGIC}" --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE}
-
-cat << EOF
-Mosaic Finished: ${VLC_SAP_GROUP}/${VLC_SAP_NAME}
-EOF
+VLC_COMMAND="${VLC} -I telnet --telnet-password=${PASSWORD} --telnet-port=${PORT} --no-media-library --verbose=${VLC_VERBOSE} --vlm-conf=${HOME}/vlc/mosaic.vlm --no-disable-screensaver ${VLC_AVCODEC_OPTIONS} --no-repeat --no-loop --network-caching=${VLC_CACHE} --drop-late-frames --skip-frames --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE}"
+echo "📺 Starting VLC Stream ${VLC_SAP_GROUP}/${VLC_SAP_NAME}"
+echo "🖥 ${VLC_COMMAND}"
+# shellcheck disable=SC2086
+nice -n -20 ${VLC_COMMAND} &
+vlcpid=$!
+echo "🆔 VLC Running as PID ${vlcpid}"
+wait "$vlcpid"
+rm -f ${HOME}/vlc/mosaic.vlm
+echo "👋 VLC Stream ${VLC_SAP_GROUP}/${VLC_SAP_NAME} Finished"
