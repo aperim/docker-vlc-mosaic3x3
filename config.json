@@ -1,0 +1,5 @@
+{
+  "name": "Docker VLC Mosaic Multicaster",
+  "description": "Generates a 3x3 mosaic and broadcasts it to a mulitcast address",
+  "vendor": "Aperim Pty Ltd"
+}

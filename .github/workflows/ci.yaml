@@ -1,0 +1,210 @@
+---
+name: CI
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  information:
+    name: Gather add-on information
+    runs-on: ubuntu-latest
+    outputs:
+      build_date: ${{ steps.information.outputs.build_date }}
+      description: ${{ steps.information.outputs.description }}
+      environment: ${{ steps.information.outputs.environment }}
+      name: ${{ steps.information.outputs.name }}
+      vendor: ${{ steps.information.outputs.vendor }}
+      version: ${{ steps.information.outputs.version }}
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: ℹ️ Gather version and environment
+        id: information
+        shell: bash
+        # yamllint disable rule:line-length
+        run: |
+          sha="${{ github.sha }}"
+          environment="edge"
+          version="${sha:0:7}"
+          if [[ "${{ github.event_name }}" = "release" ]]; then
+            version="${{ github.event.release.tag_name }}"
+            version="${version,,}"
+            version="${version#v}"
+            environment="stable"
+            if [[ "${{ github.event.release.prerelease }}" = "true" ]]; then
+              environment="beta"
+            fi
+          fi
+
+          echo "::set-output name=environment::${environment}"
+          echo "::set-output name=version::${version}"
+
+          echo ::set-output name=name::$(jq -r .name config.json)
+          echo ::set-output name=description::$(jq -r .description config.json)
+          echo ::set-output name=vendor::$(jq -r .vendor config.json)
+          echo ::set-output name=build_date::$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        # yamllint enable rule:line-length
+
+  lint-hadolint:
+    name: Hadolint
+    needs:
+      - information
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run Hadolint
+        uses: brpaz/hadolint-action@v1.5.0
+        with:
+          dockerfile: "./container/Dockerfile"
+          ignore: "DL3003 DL3007 DL3008 DL4006"
+
+  lint-json:
+    name: JSON Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run JQ
+        run: |
+          shopt -s globstar
+          cat **/*.json | jq '.'
+
+  lint-markdown:
+    name: MarkdownLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run mdl
+        uses: actionshub/markdownlint@2.0.2
+
+  lint-shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run Shellcheck
+        uses: ludeeus/action-shellcheck@1.1.0
+        env:
+          SHELLCHECK_OPTS: -s bash
+        with:
+          ignore: .devcontainer
+
+  lint-yamllint:
+    name: YAMLLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run YAMLLint
+        uses: frenck/action-yamllint@v1.1
+
+  lint-prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: 🚀 Run Prettier
+        uses: creyD/prettier_action@v4.0
+        with:
+          prettier_options: --write **/*.{json,js,md,yaml}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: 👷 Build
+    needs:
+      - information
+      - lint-hadolint
+      - lint-json
+      - lint-markdown
+      - lint-prettier
+      - lint-shellcheck
+      - lint-yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+          persist-credentials: false
+
+      - name: 📝 Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            ghcr.io/aperim/vlc-mosaic3x3
+            aperimau/vlc-mosaic3x3
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: 🏗 Set up build cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ github.sha }}
+            ${{ runner.os }}-buildx
+
+      - name: 🏗 Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: 🏗 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+
+      - name: 🚀 Build
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./container
+          file: "./container/Dockerfile"
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          # yamllint disable-line rule:line-length
+          platforms: "linux/amd64,linux/386,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x"
+          build-args: |
+            BUILD_DATE=${{ needs.information.outputs.build_date }}
+            BUILD_DESCRIPTION=${{ needs.information.outputs.description }}
+            BUILD_NAME=${{ needs.information.outputs.name }}
+            BUILD_REF=${{ github.sha }}
+            BUILD_REPOSITORY=${{ github.repository }}
+            BUILD_VERSION=${{ needs.information.outputs.version }}
+            BUILD_VENDOR=${{ needs.information.outputs.vendor }}
+            ENVIRONMENT=${{ needs.information.outputs.description }}
+            OS_CONTAINER=debian
+            OS_VARIENT=bullseye-slim
+      # This ugly bit is necessary, or our cache will grow forever...
+      # Well until we hit GitHub's limit of 5GB :)
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: 🚚 Swap build cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
