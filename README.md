@@ -21,7 +21,7 @@ docker run -it --rm --network host \
     -e VLC_SOURCE_1X3="http://example.com/stream/exciting_video" \
     -e VLC_SOURCE_2X3="http://example.com/stream/exciting_video" \
     -e VLC_SOURCE_3X3="http://example.com/stream/exciting_video" \
-    ghcr.io/aperim/vlc-matrix3x3:latest
+    ghcr.io/aperim/vlc-mosaic3x3:latest
 ```
 
 ## That's it

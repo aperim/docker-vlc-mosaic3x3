@@ -10,7 +10,7 @@ HEALTHCHECK \
     CMD pidof vlc > /dev/null || exit 1
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get -y upgrade && \
+    apt-get -y full-upgrade && \
     apt-get install -y locales
 
 # Defaults, can be changed at build time
