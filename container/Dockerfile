@@ -11,7 +11,7 @@ HEALTHCHECK \
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get -y full-upgrade && \
-    apt-get install -y locales
+    apt-get install -y locales ca-certificates
 
 # Defaults, can be changed at build time
 ARG LANG=en_US.UTF-8
