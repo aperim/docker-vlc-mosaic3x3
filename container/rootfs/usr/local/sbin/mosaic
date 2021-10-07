@@ -223,7 +223,7 @@ VLC_COMMAND="${VLC} -I telnet --telnet-password=${PASSWORD} --telnet-port=${PORT
 echo "📺 Starting VLC Stream ${VLC_SAP_GROUP}/${VLC_SAP_NAME}"
 echo "🖥 ${VLC_COMMAND}"
 # shellcheck disable=SC2086
-nice -n -20 ${VLC_COMMAND} &
+${VLC_COMMAND} &
 vlcpid=$!
 echo "🆔 VLC Running as PID ${vlcpid}"
 wait "$vlcpid"
