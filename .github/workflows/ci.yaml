@@ -199,7 +199,7 @@ jobs:
             BUILD_VENDOR=${{ needs.information.outputs.vendor }}
             ENVIRONMENT=${{ needs.information.outputs.description }}
             OS_CONTAINER=ubuntu
-            OS_VARIENT=impish
+            OS_VARIENT=hirsute
       # This ugly bit is necessary, or our cache will grow forever...
       # Well until we hit GitHub's limit of 5GB :)
       # https://github.com/docker/build-push-action/issues/252
