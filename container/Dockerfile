@@ -1,6 +1,6 @@
 ARG OS_CONTAINER=debian
 ARG OS_VARIENT=latest
-FROM ${OS_CONTAINER}:${OS_VARIENT}
+FROM ghcr.io/aperim/vlc-${OS_CONTAINER}-${OS_VARIENT}:1
 
 HEALTHCHECK \
     --interval=1m \
@@ -9,30 +9,12 @@ HEALTHCHECK \
     --retries=3 \
     CMD pidof vlc > /dev/null || exit 1
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get -y full-upgrade && \
-    apt-get install -y locales ca-certificates
-
-# Defaults, can be changed at build time
-ARG LANG=en_US.UTF-8
-
-RUN sed -i "/${LANG}/s/^# //g" /etc/locale.gen && \
-    locale-gen $LANG \
-    && update-locale LANG=$LANG
-
-ENV LANG $LANG
-ENV LC_ALL $LANG
-ENV LANGUAGE $LANG
-
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
   ffmpeg \
   imagemagick \
   mpg123 \
-  vlc && \
   apt-get clean && \
-  rm -rf /var/lib/apt/lists/* && \
-  addgroup --gid 1001 vlc && \
-  adduser --home /vlc --gecos "VLC User" --shell /sbin/nologin --uid 1001 --gid 1001 --disabled-password --disabled-login vlc
+  rm -rf /var/lib/apt/lists/*
 
 COPY rootfs/ /
 
