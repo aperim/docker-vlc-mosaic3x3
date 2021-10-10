@@ -1,20 +1,13 @@
-ARG OS_CONTAINER=debian
-ARG OS_VARIENT=latest
-FROM ghcr.io/aperim/vlc-${OS_CONTAINER}-${OS_VARIENT}:1
+ARG OS_CONTAINER=ubuntu
+ARG OS_VARIENT=impish
+FROM ghcr.io/aperim/vlc-${OS_CONTAINER}-${OS_VARIENT}:2
 
 HEALTHCHECK \
     --interval=1m \
     --timeout=3s \
     --start-period=30s \
     --retries=3 \
-    CMD pidof vlc > /dev/null || exit 1
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  ffmpeg \
-  imagemagick \
-  mpg123 \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+    CMD pidof vlc >/dev/null || exit 1
 
 COPY rootfs/ /
 
