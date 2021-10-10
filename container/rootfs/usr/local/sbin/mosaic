@@ -220,7 +220,6 @@ Sources:
  3,3 ${VLC_SOURCE_3X3}
 EOF
 
-# VLC_COMMAND="${VLC} -I telnet --telnet-password=${PASSWORD} --telnet-port=${PORT} --no-media-library --verbose=${VLC_VERBOSE} --vlm-conf=${HOME}/vlc/mosaic.vlm --no-disable-screensaver ${VLC_AVCODEC_OPTIONS} --no-repeat --no-loop --network-caching=${VLC_CACHE} --drop-late-frames --skip-frames --no-daemon --adaptive-logic=${VLC_ADAPTIVE_LOGIC} --adaptive-maxwidth=${VLC_ADAPTIVE_WIDTH} --adaptive-maxheight=${VLC_ADAPTIVE_HEIGHT} --adaptive-bw=${VLC_ADAPTIVE_BITRATE}"
 VLC_COMMAND=( "-I" "telnet" "--telnet-password" "${PASSWORD}" "--telnet-port" "${PORT}" "--no-media-library" "--verbose" "${VLC_VERBOSE}" "--vlm-conf" "${HOME}/vlc/mosaic.vlm" "--no-disable-screensaver" "${VLC_AVCODEC_OPTIONS[@]}" "--no-repeat" "--no-loop" "--network-caching" "${VLC_CACHE}" "--drop-late-frames" "--skip-frames" "--no-daemon" "--adaptive-logic" "${VLC_ADAPTIVE_LOGIC}" "--adaptive-maxwidth" "${VLC_ADAPTIVE_WIDTH}" "--adaptive-maxheight" "${VLC_ADAPTIVE_HEIGHT}" "--adaptive-bw" "${VLC_ADAPTIVE_BITRATE}" )
 echo "📺 Starting VLC Stream ${VLC_SAP_GROUP}/${VLC_SAP_NAME}"
 printf "🖥 Launching: ${VLC} %s\n" "${VLC_COMMAND[*]}"
