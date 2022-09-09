@@ -26,7 +26,7 @@ jobs:
       sha_short: ${{ steps.information.outputs.sha_short }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.2
       - name: ℹ️ Gather version and environment
         id: information
         shell: bash
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.2
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
